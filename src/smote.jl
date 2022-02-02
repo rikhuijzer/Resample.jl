@@ -3,6 +3,18 @@ const DEFAULT_K = 15
 
 _npoints(data::AbstractMatrix) = size(data, 2)
 
+function _npoints(data)
+    @assert Tables.istable(data)
+    return Tables.rowcount(data)
+end
+
+_ndims(data::AbstractMatrix) = size(data, 1)
+
+function _ndims(data)
+    @assert Tables.istable(data)
+    return length(Tables.names(data))
+end
+
 """
 Return one new point between the points A and B.
 """
@@ -89,7 +101,11 @@ function smote(
         error(ArgumentError(msg))
     end
     mat = Tables.matrix(data; transpose=true)
-    return smote(mat, n; k)
+    new_points = smote(mat, n; k)
+
+    header = Tables.columnnames(data)
+    table = Tables.table(transpose(new_points); header)
+    return table
 end
 
 smote(data, n; k::Union{Nothing,Int}=nothing) = smote(default_rng(), data, n; k)
