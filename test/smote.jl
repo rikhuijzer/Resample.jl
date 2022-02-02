@@ -27,6 +27,13 @@ n = 100
 ndims = 30
 data = rand(ndims, 10_000)
 new_points = smote(data, n)
-Resample._npoints(data) = n
+@test Resample._npoints(new_points) == n
+@test size(new_points, 1) == ndims
+
+n = 4
+ndims = 2
+data = (; x=[p1_x, p2_x], y=[p1_y, p2_y])
+new_points = smote(data, n)
+@test Resample._npoints(new_points) == n
 @test size(new_points, 1) == ndims
 

@@ -44,7 +44,7 @@ function _new_point(rng::AbstractRNG, data::AbstractVecOrMat, tree, k)
 end
 
 "The number of nearest neighbors is limited by the number of available datapoints"
-_detect_k(data)::Int = min(DEFAULT_K, _npoints(data) - 1)
+_detect_k(data::AbstractVecOrMat)::Int = min(DEFAULT_K, _npoints(data) - 1)
 
 """
     smote([rng=default_rng()], ...)
@@ -66,19 +66,38 @@ function smote(
         rng::AbstractRNG,
         data::AbstractVecOrMat,
         n::Int;
-        k::Int=_detect_k(data)
+        k::Union{Nothing,Int}=nothing
     )
-
     tree = KDTree(data)
-    new_points = hcat([_new_point(rng, data, tree, k) for i in 1:n]...)
+    dk = _detect_k(data)
+    new_points = hcat([_new_point(rng, data, tree, dk) for i in 1:n]...)
     return new_points
+end
+
+"""
+    _table2matrix(X) -> Matrix
+
+Assumes that `X` satisfies the Tables interface.
+This code is partially based on `Base.Matrix` in DataFrames.jl.
+"""
+function _table2matrix(X)::Matrix
+    nrows = length(Tables.rows(X))
+    ncols = length(Tables.columns(X))
+    T = reduce(promote_type, (eltype(v) for v in Tables.columns(X)), init=Union{})
+    out = Matrix{T}(undef, nrows, ncols)
+    for (i, row) in enumerate(Tables.rows(X))
+        for (j, col) in enumerate(Tables.columnnames(row))
+            out[i, j] = Tables.getcolumn(row, col)
+        end
+    end
+    return out
 end
 
 function smote(
         rng::AbstractRNG,
         data,
         n::Int;
-        k::Int=_detect_k(data)
+        k::Union{Nothing,Int}=nothing
     )
     if !Tables.istable(data)
         T = typeof(data)
@@ -88,8 +107,8 @@ function smote(
             """
         error(ArgumentError(msg))
     end
-    return smote(data, n; k)
+    return smote(_table2matrix(data), n; k)
 end
 
-smote(data, n; k::Int=_detect_k(data)) = smote(default_rng(), data, n; k)
+smote(data, n; k::Union{Nothing,Int}=nothing) = smote(default_rng(), data, n; k)
 

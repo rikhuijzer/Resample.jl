@@ -4,6 +4,7 @@ using Random:
     AbstractRNG,
     default_rng
 using NearestNeighbors
+using Tables
 
 include("smote.jl")
 
