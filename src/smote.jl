@@ -74,25 +74,6 @@ function smote(
     return new_points
 end
 
-"""
-    _table2matrix(X) -> Matrix
-
-Assumes that `X` satisfies the Tables interface.
-This code is partially based on `Base.Matrix` in DataFrames.jl.
-"""
-function _table2matrix(X)::Matrix
-    nrows = length(Tables.rows(X))
-    ncols = length(Tables.columns(X))
-    T = reduce(promote_type, (eltype(v) for v in Tables.columns(X)), init=Union{})
-    out = Matrix{T}(undef, nrows, ncols)
-    for (i, row) in enumerate(Tables.rows(X))
-        for (j, col) in enumerate(Tables.columnnames(row))
-            out[i, j] = Tables.getcolumn(row, col)
-        end
-    end
-    return out
-end
-
 function smote(
         rng::AbstractRNG,
         data,
@@ -107,7 +88,8 @@ function smote(
             """
         error(ArgumentError(msg))
     end
-    return smote(_table2matrix(data), n; k)
+    mat = Tables.matrix(data; transpose=true)
+    return smote(mat, n; k)
 end
 
 smote(data, n; k::Union{Nothing,Int}=nothing) = smote(default_rng(), data, n; k)
