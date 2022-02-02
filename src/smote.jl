@@ -1,5 +1,5 @@
 "Default number of nearest neighbors for SMOTE"
-const DEFAULT_K = 5
+const DEFAULT_K = 15
 
 _npoints(data::AbstractMatrix) = size(data, 2)
 

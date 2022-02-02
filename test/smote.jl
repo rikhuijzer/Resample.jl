@@ -22,3 +22,11 @@ for point in eachcol(new_points)
     y = point[2]
     @test p2_x ≤ y ≤ p2_y
 end
+
+n = 100
+ndims = 30
+data = rand(ndims, 10_000)
+new_points = smote(data, n)
+Resample._npoints(data) = n
+@test size(new_points, 1) == ndims
+
