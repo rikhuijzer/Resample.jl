@@ -24,11 +24,14 @@ begin
     using StableRNGs: StableRNG
 end
 
-# ╔═╡ de4d0546-15de-4892-8aeb-441b18ac6fa0
-rng = StableRNG(2);
+# ╔═╡ c35d1118-9caf-469a-a437-ab3436d89bb6
+md"Lorem ipsum
 
 # ╔═╡ 566a54ec-3731-4b1b-be80-ce3a814202f4
-df = DataFrame(; A=rand(rng, 6), B=rand(rng, 6))
+df = let
+	rng = StableRNG(1)
+	DataFrame(; A=rand(rng, 6), B=rand(rng, 6))
+end
 
 # ╔═╡ 12e5086d-ab5b-4ae4-a931-36ca4a0f01e3
 # hideall
@@ -38,17 +41,33 @@ marker = :utriangle;
 # hideall
 markersize = 14;
 
+# ╔═╡ 8398cc7a-d927-4beb-8f5b-0b342f1a59e6
+# hideall
+resolution = (1000, 1000);
+
 # ╔═╡ 7b36f122-a63d-43f7-9861-73c6b65da5fa
 # hideall
-scatter(df.A, df.B)
+let
+	fig = Figure(; resolution)
+	ax = Axis(fig[1, 1])
+	scatter!(ax, df.A, df.B)
+	fig
+end
 
 # ╔═╡ 8349ef02-26c7-4e22-a146-2528b6bc5d88
-new_data = DataFrame(smote(df, 4));
+new_data = let
+	rng = StableRNG(1)
+	new_points = smote(rng, df, 4)
+	DataFrame(new_points)
+end
+
+# ╔═╡ 336c44ef-5248-4588-8db4-4fcee24cdfcc
+md"Some text"
 
 # ╔═╡ e617e094-567b-4425-8409-d8513902ad92
 # hideall
 let
-	fig = Figure()
+	fig = Figure(; resolution=(1000, 1000))
 	ax = Axis(fig[1, 1])
 
 	scatter!(ax, df.A, df.B; label="Original")
@@ -56,8 +75,10 @@ let
 
 	for i in 1:nrow(df)
 		for j in 1:nrow(df)
-			kwargs = (; color=:black, linestyle=:dash)
-			lines!(ax, [df.A[i], df.A[j]], [df.B[i], df.B[j]]; kwargs...)
+			if i < j
+				kwargs = (; color=:black, linestyle=:dash)
+				lines!(ax, [df.A[i], df.A[j]], [df.B[i], df.B[j]]; kwargs...)
+			end
 		end
 	end
 
@@ -68,10 +89,12 @@ end
 # ╔═╡ Cell order:
 # ╠═7c904df4-8434-11ec-119d-0117ccc4d0ae
 # ╠═bc9d5fb8-2f76-4b09-b770-29a95ad4dabe
-# ╠═de4d0546-15de-4892-8aeb-441b18ac6fa0
+# ╠═c35d1118-9caf-469a-a437-ab3436d89bb6
 # ╠═566a54ec-3731-4b1b-be80-ce3a814202f4
 # ╠═12e5086d-ab5b-4ae4-a931-36ca4a0f01e3
 # ╠═1d80b325-fd60-4f13-96bc-2d6dbf4ca3cb
+# ╠═8398cc7a-d927-4beb-8f5b-0b342f1a59e6
 # ╠═7b36f122-a63d-43f7-9861-73c6b65da5fa
 # ╠═8349ef02-26c7-4e22-a146-2528b6bc5d88
+# ╠═336c44ef-5248-4588-8db4-4fcee24cdfcc
 # ╠═e617e094-567b-4425-8409-d8513902ad92
