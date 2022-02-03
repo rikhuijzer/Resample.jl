@@ -15,12 +15,8 @@ n = 2
 new_points = smote(data, n)
 @test Resample._npoints(new_points) == n
 
-for point in eachcol(new_points)
-    x = point[1]
-    @test p1_x ≤ x ≤ p2_x
-
-    y = point[2]
-    @test p2_x ≤ y ≤ p2_y
+for p in eachcol(new_points)
+    @test Resample._is_in_between(p, [p1_x, p1_y], [p2_x, p2_y]) == true
 end
 
 n = 100
@@ -36,4 +32,13 @@ data = (; x=[p1_x, p2_x], y=[p1_y, p2_y])
 new_points = smote(data, n)
 @test Resample._npoints(new_points) == n
 @test Resample._ndims(new_points) == ndims
+
+# 10D
+data = rand(10, 2)
+n = 6
+new_points = smote(data, n)
+for p in eachcol(new_points)
+    p1, p2 = Resample._point.(Ref(data), [1, 2])
+    @test Resample._is_in_between(p, p1, p2)
+end
 
