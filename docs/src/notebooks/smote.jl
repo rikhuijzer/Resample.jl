@@ -18,7 +18,7 @@ end
 
 # ╔═╡ 29dd924c-8f29-422f-84cf-ddb393e01fb2
 # hideall
-using Revise
+try using Revise; catch end # For development purposes.
 
 # ╔═╡ bc9d5fb8-2f76-4b09-b770-29a95ad4dabe
 begin
