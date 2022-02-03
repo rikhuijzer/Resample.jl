@@ -30,7 +30,9 @@ Return one new point between the points A and B.
 """
 function _new_point(A::AbstractVector, B::AbstractVector)
     @assert length(A) == length(B)
-    return (B .- A) .* rand() .+ A
+    # Avoids allocating a temporary matrix, unlike `(B .- A) .* rand() .+ A`.`
+    x = rand()
+    return (1 - x) .* A .+ x .* B
 end
 
 _point(data::AbstractMatrix, index) = data[:, index]
