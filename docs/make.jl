@@ -40,6 +40,9 @@ makedocs(;
     pages
 )
 
+
+deploydocs(; repo="github.com/rikhuijzer/Resample.jl", devbranch="main")
+
 # Useful for local development.
 cd(pkgdir(Resample))
 
