@@ -1,5 +1,6 @@
 module Resample
 
+using Distances: euclidean
 using Random:
     AbstractRNG,
     default_rng

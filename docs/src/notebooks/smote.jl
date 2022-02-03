@@ -16,6 +16,9 @@ let
     Pkg.instantiate()
 end
 
+# ╔═╡ 29dd924c-8f29-422f-84cf-ddb393e01fb2
+using Revise
+
 # ╔═╡ bc9d5fb8-2f76-4b09-b770-29a95ad4dabe
 begin
     using CairoMakie
@@ -25,7 +28,7 @@ begin
 end
 
 # ╔═╡ c35d1118-9caf-469a-a437-ab3436d89bb6
-md"Lorem ipsum
+md"Lorem ipsum"
 
 # ╔═╡ 566a54ec-3731-4b1b-be80-ce3a814202f4
 df = let
@@ -86,8 +89,39 @@ let
 	fig
 end	
 
+# ╔═╡ a6ec1552-02a0-4089-b207-8830aceb178e
+a = [0, 0]
+
+# ╔═╡ 0486206a-d616-4629-ab99-4b9a886691d2
+b = [1, 1]
+
+# ╔═╡ 82798d38-49fc-4fd2-958c-b8adf375d750
+b .- a
+
+# ╔═╡ 1fe97258-e7d1-4efb-ad2d-aa2ea043b38c
+np = Resample._new_point(a, b)
+
+# ╔═╡ 662f1a61-850e-4057-b10e-dd8ae234d005
+"Return whether `a` sits between `b` and `c`."
+function _point_in_between(a, b, c; atol=0.01)
+	dist_ab = Resample._distance(b, a)
+	dist_ac = Resample._distance(c, a)
+	dist_total = Resample._distance(c, b)
+	return isapprox(dist_ab + dist_ac, dist_total; atol)
+end
+
+# ╔═╡ 6d95db98-81e2-4b54-b8df-6a99f6e409a0
+distance(X::AbstractVector{Real}) 
+
+# ╔═╡ 9ff0748c-538b-4200-a9e3-9500e8971148
+_point_in_between(a, b, np)
+
+# ╔═╡ db51b1d5-f3e0-46c0-b66a-abd6ed22b13d
+scatter(first.([a, b, np]), last.([a, b, np]))
+
 # ╔═╡ Cell order:
 # ╠═7c904df4-8434-11ec-119d-0117ccc4d0ae
+# ╠═29dd924c-8f29-422f-84cf-ddb393e01fb2
 # ╠═bc9d5fb8-2f76-4b09-b770-29a95ad4dabe
 # ╠═c35d1118-9caf-469a-a437-ab3436d89bb6
 # ╠═566a54ec-3731-4b1b-be80-ce3a814202f4
@@ -98,3 +132,11 @@ end
 # ╠═8349ef02-26c7-4e22-a146-2528b6bc5d88
 # ╠═336c44ef-5248-4588-8db4-4fcee24cdfcc
 # ╠═e617e094-567b-4425-8409-d8513902ad92
+# ╠═a6ec1552-02a0-4089-b207-8830aceb178e
+# ╠═0486206a-d616-4629-ab99-4b9a886691d2
+# ╠═82798d38-49fc-4fd2-958c-b8adf375d750
+# ╠═1fe97258-e7d1-4efb-ad2d-aa2ea043b38c
+# ╠═662f1a61-850e-4057-b10e-dd8ae234d005
+# ╠═6d95db98-81e2-4b54-b8df-6a99f6e409a0
+# ╠═9ff0748c-538b-4200-a9e3-9500e8971148
+# ╠═db51b1d5-f3e0-46c0-b66a-abd6ed22b13d

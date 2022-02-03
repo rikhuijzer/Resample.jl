@@ -15,6 +15,16 @@ function _ndims(data)
     return length(Tables.names(data))
 end
 
+_distance(x, y) = euclidean(x, y)
+
+"Return whether point `a` is approximately in between `b` and `c`."
+function _is_in_between(a, b, c; atol=0.01)::Bool
+    dist_ab = _distance(b, a)
+    dist_ac = _distance(c, a)
+    dist_total = _distance(c, b)
+    return isapprox(dist_ab + dist_ac, dist_total; atol)
+end
+
 """
 Return one new point between the points A and B.
 """
@@ -36,11 +46,13 @@ We could avoid this by creating a new tree for each search, but that is more exp
 """
 function _random_neighbor(tree, data, random_point, k)
     sortres = true
-    idxs, _ = knn(tree, random_point, k + 1, true)
+    idxs, dists = knn(tree, random_point, k + 1, true)
     popfirst!(idxs)
-    random_neighbor_index = rand(idxs)
+    random_result_index = rand(1:length(idxs))
+    random_neighbor_index = idxs[random_result_index]
     random_neighbor = _point(data, random_neighbor_index)
-    return random_neighbor
+    distance = dists[random_result_index]
+    return random_neighbor, distance
 end
 
 """
@@ -50,7 +62,7 @@ function _new_point(rng::AbstractRNG, data::AbstractVecOrMat, tree, k)
     n_minority = _npoints(data)
     random_point_index = rand(1:n_minority)
     random_point = _point(data, random_point_index)
-    random_neighbor = _random_neighbor(tree, data, random_point, k)
+    random_neighbor, distance = _random_neighbor(tree, data, random_point, k)
     new_point = _new_point(random_point, random_neighbor)
     return new_point
 end
