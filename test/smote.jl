@@ -33,3 +33,12 @@ new_points = smote(data, n)
 @test Resample._npoints(new_points) == n
 @test Resample._ndims(new_points) == ndims
 
+# 10D
+data = rand(10, 2)
+n = 6
+new_points = smote(data, n)
+for p in eachcol(new_points)
+    p1, p2 = Resample._point.(Ref(data), [1, 2])
+    @test Resample._is_in_between(p, p1, p2)
+end
+

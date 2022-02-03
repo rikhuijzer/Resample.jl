@@ -17,32 +17,46 @@ let
 end
 
 # ╔═╡ 29dd924c-8f29-422f-84cf-ddb393e01fb2
+# hideall
 using Revise
 
 # ╔═╡ bc9d5fb8-2f76-4b09-b770-29a95ad4dabe
 begin
     using CairoMakie
     using DataFrames
-	using Resample
+    using Resample
     using StableRNGs: StableRNG
 end
 
+# ╔═╡ 62e550fe-aa36-4f11-ade8-d7262cbb228f
+md"""
+# SMOTE
+
+This is a tutorial walking through the basic functionality of the Synthetic Minority Over-sampling TEchnique (SMOTE) (Chawla et al., [2002](https://doi.  org/10.1613/jair.953)).
+
+This technique is useful when the accuracy of a statistical model is low due to class imbalances.
+For example, when fitting a model on an outcome variable with 2 classes and one class has 10 items and the other 90 items, then a model can score very well by always predicting a sample to be in the biggest class, also known as the majority class.
+Similarly, the smallest class is called the minority class.
+
+The idea of SMOTE is to fix the class imbalance by generating random points in between points in the minority group.
+
+## In between
+
+In the first part of this tutorial, a few random points in a minority class are generated.
+Next, we plot these points, generate a few synthetic (new) points and show that the synthetic points lay between the original points.
+"""
+
 # ╔═╡ c35d1118-9caf-469a-a437-ab3436d89bb6
-md"Lorem ipsum"
+md"Let's start by generating some random data:"
 
 # ╔═╡ 566a54ec-3731-4b1b-be80-ce3a814202f4
 df = let
-	rng = StableRNG(1)
-	DataFrame(; A=rand(rng, 6), B=rand(rng, 6))
+    rng = StableRNG(2)
+    DataFrame(; A=rand(rng, 4), B=rand(rng, 4))
 end
 
-# ╔═╡ 12e5086d-ab5b-4ae4-a931-36ca4a0f01e3
-# hideall
-marker = :utriangle;
-
-# ╔═╡ 1d80b325-fd60-4f13-96bc-2d6dbf4ca3cb
-# hideall
-markersize = 14;
+# ╔═╡ 3ee34b73-8394-4f0e-ad93-4f8f20ced692
+md"Which looks as follows when plotted:"
 
 # ╔═╡ 8398cc7a-d927-4beb-8f5b-0b342f1a59e6
 # hideall
@@ -51,92 +65,94 @@ resolution = (1000, 1000);
 # ╔═╡ 7b36f122-a63d-43f7-9861-73c6b65da5fa
 # hideall
 let
-	fig = Figure(; resolution)
-	ax = Axis(fig[1, 1])
-	scatter!(ax, df.A, df.B)
-	fig
+    fig = Figure(; resolution)
+    ax = Axis(fig[1, 1])
+    scatter!(ax, df.A, df.B; label="Minority")
+	Legend(fig[1, 2], ax)
+    fig
 end
+
+# ╔═╡ f643a1a0-0683-4051-8f88-427ef5cfa3e7
+md"To generate new synthetic points (`new_points`), we use the `smote` function from this package:"
 
 # ╔═╡ 8349ef02-26c7-4e22-a146-2528b6bc5d88
 new_data = let
-	rng = StableRNG(1)
-	new_points = smote(rng, df, 4)
-	DataFrame(new_points)
+    rng = StableRNG(1)
+    new_points = smote(rng, df, 4)
+    DataFrame(new_points)
 end
 
 # ╔═╡ 336c44ef-5248-4588-8db4-4fcee24cdfcc
-md"Some text"
+md"
+Plotting these 2-dimensional points with the synthetic points looks as follows:
+"
 
 # ╔═╡ e617e094-567b-4425-8409-d8513902ad92
 # hideall
 let
-	fig = Figure(; resolution=(1000, 1000))
-	ax = Axis(fig[1, 1])
+    fig = Figure(; resolution)
+    ax = Axis(fig[1, 1])
 
-	scatter!(ax, df.A, df.B; label="Original")
-	scatter!(ax, new_data.A, new_data.B; label="Synthetic")
+    scatter!(ax, df.A, df.B; label="Minority")
+    scatter!(ax, new_data.A, new_data.B; label="Synthetic")
 
-	for i in 1:nrow(df)
-		for j in 1:nrow(df)
-			if i < j
-				kwargs = (; color=:black, linestyle=:dash)
-				lines!(ax, [df.A[i], df.A[j]], [df.B[i], df.B[j]]; kwargs...)
-			end
-		end
-	end
+    for i in 1:nrow(df)
+        for j in 1:nrow(df)
+            if i < j
+                kwargs = (; color=:black, linestyle=:dash, linewidth=1)
+                lines!(ax, [df.A[i], df.A[j]], [df.B[i], df.B[j]]; kwargs...)
+            end
+        end
+    end
 
-	Legend(fig[1, 2], ax)
-	fig
-end	
-
-# ╔═╡ a6ec1552-02a0-4089-b207-8830aceb178e
-a = [0, 0]
-
-# ╔═╡ 0486206a-d616-4629-ab99-4b9a886691d2
-b = [1, 1]
-
-# ╔═╡ 82798d38-49fc-4fd2-958c-b8adf375d750
-b .- a
-
-# ╔═╡ 1fe97258-e7d1-4efb-ad2d-aa2ea043b38c
-np = Resample._new_point(a, b)
-
-# ╔═╡ 662f1a61-850e-4057-b10e-dd8ae234d005
-"Return whether `a` sits between `b` and `c`."
-function _point_in_between(a, b, c; atol=0.01)
-	dist_ab = Resample._distance(b, a)
-	dist_ac = Resample._distance(c, a)
-	dist_total = Resample._distance(c, b)
-	return isapprox(dist_ab + dist_ac, dist_total; atol)
+    Legend(fig[1, 2], ax)
+    fig
 end
 
-# ╔═╡ 6d95db98-81e2-4b54-b8df-6a99f6e409a0
-distance(X::AbstractVector{Real}) 
+# ╔═╡ 2934cfb2-36fa-4969-9bc8-007ee24274aa
+md"
+where the dashed lines are straight lines in between all the points.
+As expected, the synthetic points lay in between the minority points.
 
-# ╔═╡ 9ff0748c-538b-4200-a9e3-9500e8971148
-_point_in_between(a, b, np)
+Next, we can do this for more points to see what happens then.
+"
 
-# ╔═╡ db51b1d5-f3e0-46c0-b66a-abd6ed22b13d
-scatter(first.([a, b, np]), last.([a, b, np]))
+# ╔═╡ 1edf932f-61b8-411e-812d-ef455b3b0d28
+md"""
+## Cloud
+
+When doing this for many points, we will see that the cloud of points gets thicker due when the synthetic points are added.
+In the first part of this tutorial, we passed the data as a DataFrame (or any other `Tables.istable` object), but we can also pass a matrix:
+"""
+
+# ╔═╡ c102759b-40f1-45a0-ab04-99ccd28cabf5
+mat = rand(2, 100)
+
+# ╔═╡ c4dc370b-98db-412c-8d9f-c181d4ad623e
+# hideall
+let
+	fig = Figure(; resolution)
+	ax = Axis(fig[1, 1])
+	scatter!(ax, mat[1, :], mat[2, :]; label="Minority")
+	Legend(fig[1, 2], ax)
+	fig
+end
 
 # ╔═╡ Cell order:
 # ╠═7c904df4-8434-11ec-119d-0117ccc4d0ae
 # ╠═29dd924c-8f29-422f-84cf-ddb393e01fb2
+# ╠═62e550fe-aa36-4f11-ade8-d7262cbb228f
 # ╠═bc9d5fb8-2f76-4b09-b770-29a95ad4dabe
 # ╠═c35d1118-9caf-469a-a437-ab3436d89bb6
 # ╠═566a54ec-3731-4b1b-be80-ce3a814202f4
-# ╠═12e5086d-ab5b-4ae4-a931-36ca4a0f01e3
-# ╠═1d80b325-fd60-4f13-96bc-2d6dbf4ca3cb
+# ╠═3ee34b73-8394-4f0e-ad93-4f8f20ced692
 # ╠═8398cc7a-d927-4beb-8f5b-0b342f1a59e6
 # ╠═7b36f122-a63d-43f7-9861-73c6b65da5fa
+# ╠═f643a1a0-0683-4051-8f88-427ef5cfa3e7
 # ╠═8349ef02-26c7-4e22-a146-2528b6bc5d88
 # ╠═336c44ef-5248-4588-8db4-4fcee24cdfcc
 # ╠═e617e094-567b-4425-8409-d8513902ad92
-# ╠═a6ec1552-02a0-4089-b207-8830aceb178e
-# ╠═0486206a-d616-4629-ab99-4b9a886691d2
-# ╠═82798d38-49fc-4fd2-958c-b8adf375d750
-# ╠═1fe97258-e7d1-4efb-ad2d-aa2ea043b38c
-# ╠═662f1a61-850e-4057-b10e-dd8ae234d005
-# ╠═6d95db98-81e2-4b54-b8df-6a99f6e409a0
-# ╠═9ff0748c-538b-4200-a9e3-9500e8971148
-# ╠═db51b1d5-f3e0-46c0-b66a-abd6ed22b13d
+# ╠═2934cfb2-36fa-4969-9bc8-007ee24274aa
+# ╠═1edf932f-61b8-411e-812d-ef455b3b0d28
+# ╠═c102759b-40f1-45a0-ab04-99ccd28cabf5
+# ╠═c4dc370b-98db-412c-8d9f-c181d4ad623e

@@ -31,9 +31,7 @@ Return one new point between the points A and B.
 function _new_point(A::AbstractVector, B::AbstractVector)
     @assert length(A) == length(B)
     l = length(A)
-    dist = B .- A
-    new_dist = dist .* rand(l)
-    return A .+ new_dist
+    return (B .- A) .* rand() .+ A
 end
 
 _point(data::AbstractMatrix, index) = data[:, index]
@@ -48,11 +46,9 @@ function _random_neighbor(tree, data, random_point, k)
     sortres = true
     idxs, dists = knn(tree, random_point, k + 1, true)
     popfirst!(idxs)
-    random_result_index = rand(1:length(idxs))
-    random_neighbor_index = idxs[random_result_index]
+    random_neighbor_index = rand(idxs)
     random_neighbor = _point(data, random_neighbor_index)
-    distance = dists[random_result_index]
-    return random_neighbor, distance
+    return random_neighbor
 end
 
 """
@@ -62,7 +58,7 @@ function _new_point(rng::AbstractRNG, data::AbstractVecOrMat, tree, k)
     n_minority = _npoints(data)
     random_point_index = rand(1:n_minority)
     random_point = _point(data, random_point_index)
-    random_neighbor, distance = _random_neighbor(tree, data, random_point, k)
+    random_neighbor = _random_neighbor(tree, data, random_point, k)
     new_point = _new_point(random_point, random_neighbor)
     return new_point
 end
@@ -71,15 +67,17 @@ end
 _detect_k(data::AbstractVecOrMat)::Int = min(DEFAULT_K, _npoints(data) - 1)
 
 """
-    smote([rng=default_rng()], ...)
+    smote([rng=default_rng()], data::AbstractVecOrMat, n::Int; k::Union{Nothing,Int}=nothing)
+    smote([rng=default_rng()], data, n::Int; k::Union{Nothing,Int}=nothing)
 
 Return the sample obtained via Synthetic Minority Over-sampling TEchnique (SMOTE) (Chawla et al., [2002](https://doi.org/10.1613/jair.953)) for
 
-- `data`: Data where each column denotes a point.
+- `data`: Data as a matrix or satisfying the tables interface.
+    For matices, each column denotes a point and for tables each row denotes a point.
 - `n`: Number of synthetic points that should be created.
 - `k`: Number of nearest neighbors to consider for each point.
 
-For each minority class, the algorithm creates synthetic points along the lines in between the `k` nearest neighbors.
+For each minority class, the algorithm creates synthetic points along the lines in between one of the `k` nearest neighbors.
 The location of the point along the line is chosen randomly.
 
 The implementation is based on the pseudocode from the paper, but do note that the paper has a weird API (especially `N`) and the implementation is full of indexing logic.
