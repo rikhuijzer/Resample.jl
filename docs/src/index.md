@@ -1,3 +1,3 @@
-# index
+# Home
 
-hi
+Hi

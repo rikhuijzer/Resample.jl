@@ -32,13 +32,14 @@ end
 md"""
 # SMOTE
 
-This is a tutorial walking through the basic functionality of the Synthetic Minority Over-sampling TEchnique (SMOTE) (Chawla et al., [2002](https://doi.  org/10.1613/jair.953)).
+This is a tutorial walking through the basic functionality of the `smote` function of this package which implements the Synthetic Minority Over-sampling TEchnique (SMOTE) (Chawla et al., [2002](https://doi.org/10.1613/jair.953)).
 
 This technique is useful when the accuracy of a statistical model is low due to class imbalances.
-For example, when fitting a model on an outcome variable with 2 classes and one class has 10 items and the other 90 items, then a model can score very well by always predicting a sample to be in the biggest class, also known as the majority class.
-Similarly, the smallest class is called the minority class.
+For example, when fitting a model on an outcome variable with 2 classes and one class has 10 items and the other 90 items, then a model can score very well by always predicting a sample to be in the biggest class.
+These biggest and smallest classes are respectively known as the majority and minority class.
 
 The idea of SMOTE is to fix the class imbalance by generating random points in between points in the minority group.
+This will be shown below in more detail.
 
 ## In between
 
@@ -60,7 +61,7 @@ md"Which looks as follows when plotted:"
 
 # ╔═╡ 8398cc7a-d927-4beb-8f5b-0b342f1a59e6
 # hideall
-resolution = (1000, 1000);
+resolution = (1000, 800);
 
 # ╔═╡ 7b36f122-a63d-43f7-9861-73c6b65da5fa
 # hideall
@@ -68,7 +69,7 @@ let
     fig = Figure(; resolution)
     ax = Axis(fig[1, 1])
     scatter!(ax, df.A, df.B; label="Minority")
-	Legend(fig[1, 2], ax)
+    Legend(fig[1, 2], ax)
     fig
 end
 
@@ -114,7 +115,7 @@ md"
 where the dashed lines are straight lines in between all the points.
 As expected, the synthetic points lay in between the minority points.
 
-Next, we can do this for more points to see what happens then.
+Next, we do this for a point cloud.
 "
 
 # ╔═╡ 1edf932f-61b8-411e-812d-ef455b3b0d28
@@ -126,16 +127,39 @@ In the first part of this tutorial, we passed the data as a DataFrame (or any ot
 """
 
 # ╔═╡ c102759b-40f1-45a0-ab04-99ccd28cabf5
-mat = rand(2, 100)
+mat = randn(2, 400) .* 100
+
+# ╔═╡ fdd2f703-45c7-4867-b248-7639cdb69119
+md"which looks as follows when plotted:"
 
 # ╔═╡ c4dc370b-98db-412c-8d9f-c181d4ad623e
 # hideall
 let
-	fig = Figure(; resolution)
-	ax = Axis(fig[1, 1])
-	scatter!(ax, mat[1, :], mat[2, :]; label="Minority")
-	Legend(fig[1, 2], ax)
-	fig
+    fig = Figure(; resolution)
+    ax = Axis(fig[1, 1])
+    scatter!(ax, mat[1, :], mat[2, :]; label="Minority")
+    Legend(fig[1, 2], ax)
+    fig
+end
+
+# ╔═╡ d3259ee5-34ab-4f94-a7ea-e6a590f51cb5
+md"Now, we can generate a bunch of synthetic data:"
+
+# ╔═╡ a451ea0f-8118-4865-b058-da14a394f23e
+new_mat = smote(mat, 300)
+
+# ╔═╡ 15d68355-0a57-48ef-91d8-e2644eaf6d4b
+md"which looks as follows:"
+
+# ╔═╡ 5678cc5f-00ac-4425-af1f-2174da9ba1f3
+# hideall
+let
+    fig = Figure(; resolution)
+    ax = Axis(fig[1, 1])
+    scatter!(ax, mat[1, :], mat[2, :]; label="Minority")
+    scatter!(ax, new_mat[1, :], new_mat[2, :]; label="Synthetic")
+    Legend(fig[1, 2], ax)
+    fig
 end
 
 # ╔═╡ Cell order:
@@ -155,4 +179,9 @@ end
 # ╠═2934cfb2-36fa-4969-9bc8-007ee24274aa
 # ╠═1edf932f-61b8-411e-812d-ef455b3b0d28
 # ╠═c102759b-40f1-45a0-ab04-99ccd28cabf5
+# ╠═fdd2f703-45c7-4867-b248-7639cdb69119
 # ╠═c4dc370b-98db-412c-8d9f-c181d4ad623e
+# ╠═d3259ee5-34ab-4f94-a7ea-e6a590f51cb5
+# ╠═a451ea0f-8118-4865-b058-da14a394f23e
+# ╠═15d68355-0a57-48ef-91d8-e2644eaf6d4b
+# ╠═5678cc5f-00ac-4425-af1f-2174da9ba1f3

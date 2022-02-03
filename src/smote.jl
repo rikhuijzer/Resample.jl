@@ -30,7 +30,6 @@ Return one new point between the points A and B.
 """
 function _new_point(A::AbstractVector, B::AbstractVector)
     @assert length(A) == length(B)
-    l = length(A)
     return (B .- A) .* rand() .+ A
 end
 
