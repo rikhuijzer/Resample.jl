@@ -22,7 +22,9 @@ build_tutorials()
 
 pages = [
     "Home" => "index.md",
-    "SMOTE" => "notebooks/smote.md"
+    "Tutorials" => [
+        "SMOTE" => "notebooks/smote.md"
+    ]
 ]
 
 makedocs(;
