@@ -14,7 +14,7 @@ function build_tutorials()
     use_distributed = false
     output_format = documenter_output
     bopts = BuildOptions(dir; use_distributed, output_format)
-    parallel_build(bopts)
+    build_notebooks(bopts)
     return nothing
 end
 
@@ -40,9 +40,4 @@ makedocs(;
     pages
 )
 
-
 deploydocs(; repo="github.com/rikhuijzer/Resample.jl", devbranch="main")
-
-# Useful for local development.
-cd(pkgdir(Resample))
-
