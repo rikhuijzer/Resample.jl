@@ -91,6 +91,9 @@ function smote(
         n::Int;
         k::Union{Nothing,Int}=nothing
     )
+    if eltype(data) == Int
+        data = convert(Matrix{Float64}, data)
+    end
     tree = KDTree(data)
     dk = _detect_k(data)
     new_points = hcat([_new_point(rng, data, tree, dk) for i in 1:n]...)
@@ -119,5 +122,5 @@ function smote(
     return table
 end
 
-smote(data, n; k::Union{Nothing,Int}=nothing) = smote(default_rng(), data, n; k)
+smote(data, n::Int; k::Union{Nothing,Int}=nothing) = smote(default_rng(), data, n; k)
 

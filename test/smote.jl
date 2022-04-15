@@ -42,3 +42,8 @@ for p in eachcol(new_points)
     @test Resample._is_in_between(p, p1, p2)
 end
 
+@testset "integers" begin
+    data = (; X=1:2, Y=2:3)
+    n = 3
+    @test length(smote(data, n).X) == n
+end
