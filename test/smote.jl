@@ -54,14 +54,14 @@ end
         @inferred Resample._col2int(data, :class)
     end
 
-    new = (; X=[2], class=[2])
-    @test Resample._vcat_tables(data, new).X == [1, 2, 1, 2, 1, 2]
-
-    @test smote(data, :class).class == [1, 2, 1, 2, 1, 2]
+    out = smote(data, :class)
+    @test out.X == [2.0]
+    @test out.class == [2.0]
 end
 
 @testset "dataframes" begin
     data = DataFrame(; X=[1, 2, 1, 2, 1], class=[1, 2, 1, 2, 1])
     out = DataFrame(smote(data, :class))
-    @test out.class == [1, 2, 1, 2, 1, 2]
+    combined = vcat(data, out)
+    @test combined.class == [1, 2, 1, 2, 1, 2]
 end
