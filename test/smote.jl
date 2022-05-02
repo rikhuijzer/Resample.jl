@@ -50,7 +50,9 @@ end
 
 @testset "auto balance" begin
     data = (; X=[1, 2, 1, 2, 1], class=[1, 2, 1, 2, 1])
-    @inferred Resample._col2int(data, :class)
+    if v"1.7" ≤ VERSION
+        @inferred Resample._col2int(data, :class)
+    end
 
     new = (; X=[2], class=[2])
     @test Resample._vcat_tables(data, new).X == [1, 2, 1, 2, 1, 2]
