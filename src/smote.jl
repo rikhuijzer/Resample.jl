@@ -142,7 +142,7 @@ end
 
 function _vcat_tables(A, B)
     header = Tables.columnnames(A)
-    @assert header == Tables.columnnames(B)
+    @assert all(header .== Tables.columnnames(B)) "$header != $(Tables.columnnames(B))"
     ncols = length(header)
     nrows = Tables.rowcount(A) + Tables.rowcount(B)
     mat = Matrix{Real}(undef, nrows, ncols)
