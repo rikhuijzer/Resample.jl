@@ -59,3 +59,9 @@ end
 
     @test smote(data, :class).class == [1, 2, 1, 2, 1, 2]
 end
+
+@testset "dataframes" begin
+    data = DataFrame(; X=[1, 2, 1, 2, 1], class=[1, 2, 1, 2, 1])
+    out = DataFrame(smote(data, :class))
+    @test out.class == [1, 2, 1, 2, 1, 2]
+end
