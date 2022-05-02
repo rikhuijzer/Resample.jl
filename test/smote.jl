@@ -1,5 +1,3 @@
-rng = StableRNG(1)
-
 # 2D points in some minority class.
 p1_x = 0.0
 p1_y = 2.0
@@ -64,4 +62,10 @@ end
     out = DataFrame(smote(data, :class))
     combined = vcat(data, out)
     @test combined.class == [1, 2, 1, 2, 1, 2]
+end
+
+@testset "rng" begin
+    rng() = StableRNG(3)
+    data = (; X=rand(5), Y=[1, 1, 1, 2, 2])
+    @test smote(rng(), data, :Y).X == smote(rng(), data, :Y).X
 end

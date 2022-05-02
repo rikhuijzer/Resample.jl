@@ -28,10 +28,10 @@ end
 """
 Return one new point between the points A and B.
 """
-function _new_point(A::AbstractVector, B::AbstractVector)
+function _new_point(rng, A::AbstractVector, B::AbstractVector)
     @assert length(A) == length(B)
     # Avoids allocating a temporary matrix, unlike `(B .- A) .* rand() .+ A`.`
-    x = rand()
+    x = rand(rng)
     return (1 - x) .* A .+ x .* B
 end
 
@@ -43,11 +43,11 @@ Since `NearestNeighbors.knn` also works for finding the nearest neighbor for poi
 So, we call `knn(..., k + 1)` and throw away the first result.
 We could avoid this by creating a new tree for each search, but that is more expensive.
 """
-function _random_neighbor(tree, data, random_point, k)
+function _random_neighbor(rng, tree, data, random_point, k)
     sortres = true
     idxs, dists = knn(tree, random_point, k + 1, true)
     popfirst!(idxs)
-    random_neighbor_index = rand(idxs)
+    random_neighbor_index = rand(rng, idxs)
     random_neighbor = _point(data, random_neighbor_index)
     return random_neighbor
 end
@@ -57,10 +57,10 @@ Return one new point for some random point in `data`.
 """
 function _new_point(rng::AbstractRNG, data::AbstractVecOrMat, tree, k)
     n_minority = _npoints(data)
-    random_point_index = rand(1:n_minority)
+    random_point_index = rand(rng, 1:n_minority)
     random_point = _point(data, random_point_index)
-    random_neighbor = _random_neighbor(tree, data, random_point, k)
-    new_point = _new_point(random_point, random_neighbor)
+    random_neighbor = _random_neighbor(rng, tree, data, random_point, k)
+    new_point = _new_point(rng, random_point, random_neighbor)
     return new_point
 end
 
@@ -119,7 +119,7 @@ function smote(
     )
     _check_table(data)
     mat = Tables.matrix(data; transpose=true)
-    new_points = smote(mat, n; k)
+    new_points = smote(rng, mat, n; k)
 
     header = Tables.columnnames(data)
     table = Tables.table(transpose(new_points); header)
