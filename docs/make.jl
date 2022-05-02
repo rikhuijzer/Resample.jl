@@ -18,7 +18,10 @@ function build_tutorials()
     return nothing
 end
 
-build_tutorials()
+# Build the notebooks; defaults to "true".
+if get(ENV, "BUILD_DOCS_NOTEBOOKS", "true") == "true"
+    build_tutorials()
+end
 
 pages = [
     "Home" => "index.md",

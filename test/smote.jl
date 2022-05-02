@@ -47,3 +47,13 @@ end
     n = 3
     @test length(smote(data, n).X) == n
 end
+
+@testset "auto balance" begin
+    data = (; X=[1, 2, 1, 2, 1], class=[1, 2, 1, 2, 1])
+    @inferred Resample._col2int(data, :class)
+
+    new = (; X=[2], class=[2])
+    @test Resample._vcat_tables(data, new).X == [1, 2, 1, 2, 1, 2]
+
+    @test smote(data, :class).class == [1, 2, 1, 2, 1, 2]
+end

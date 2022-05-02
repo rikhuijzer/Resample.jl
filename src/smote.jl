@@ -100,12 +100,7 @@ function smote(
     return new_points
 end
 
-function smote(
-        rng::AbstractRNG,
-        data,
-        n::Int;
-        k::Union{Nothing,Int}=nothing
-    )
+function _check_table(data)
     if !Tables.istable(data)
         T = typeof(data)
         msg = """
@@ -114,6 +109,15 @@ function smote(
             """
         error(ArgumentError(msg))
     end
+end
+
+function smote(
+        rng::AbstractRNG,
+        data,
+        n::Int;
+        k::Union{Nothing,Int}=nothing
+    )
+    _check_table(data)
     mat = Tables.matrix(data; transpose=true)
     new_points = smote(mat, n; k)
 
@@ -124,3 +128,79 @@ end
 
 smote(data, n::Int; k::Union{Nothing,Int}=nothing) = smote(default_rng(), data, n; k)
 
+_col2int(data, col::Int) = col
+function _col2int(data, col::Union{Symbol,AbstractString})
+    colname = Symbol(col)::Symbol
+    nms = Tables.columnnames(data)
+    @assert eltype(nms) == Symbol
+    index = findfirst(==(colname), nms)
+    if isnothing(index)
+        return error("Could not find `$colname` in data.")
+    end
+    return index
+end
+
+function _vcat_tables(A, B)
+    header = Tables.columnnames(A)
+    @assert header == Tables.columnnames(B)
+    ncols = length(header)
+    nrows = Tables.rowcount(A) + Tables.rowcount(B)
+    mat = Matrix{Real}(undef, nrows, ncols)
+    for i in 1:length(header)
+        a = Tables.getcolumn(A, header[i])
+        b = Tables.getcolumn(B, header[i])
+        col = vcat(a, b)
+        mat[:, i] = col
+    end
+    return Tables.table(mat; header)
+end
+
+"""
+    smote(rng::AbstractRNG, data, col::Union{AbstractString,Symbol}; ratio::Real=1.0, k::Union{Nothing,Int}=nothing)
+    smote(data, col::Union{AbstractString,Symbol}; ratio::Real=1.0, k::Union{Nothing,Int}=nothing)
+
+Return a copy of `data` where the ratio between elements in `col` satisfies `ratio`.
+This is a helper function to simplify balancing `data`.
+Here, `ratio` specifies the desired ratio between the element types in `col`.
+For example, when column `:class` contains 1200 elements of class 1 and 1400 elements of class 2, then `smote(data, :class; ratio=1.0)` will add 200 elements of class 1.
+With a ratio of 0.9, smote will add only 60 elements since class 1 comes first in the data and 1400 * 0.9 = 1260 assuming that class 1 comes first in the data and then class 2.
+If class 2 would come first, then the ratio of 0.9 will fail since it would need to remove elements from class 1.
+
+!!! note
+    This functionality is currently only implemented for 2 classes.
+"""
+function smote(
+        rng::AbstractRNG,
+        data,
+        col::Union{Int,AbstractString,Symbol};
+        ratio::Real=1.0,
+        k::Union{Nothing,Int}=nothing
+    )
+    _check_table(data)
+    col_int = _col2int(data, col)
+    mat = Tables.matrix(data; transpose=false)
+    categories = @view mat[:, col_int]
+    unique_cat = unique(categories)
+    if length(unique_cat) != 2
+        error("This functionality is currently only implemented for 2 classes.")
+    end
+    n_cat = [count(cat .== categories) for cat in unique_cat]
+    actual_minority_class_size = n_cat[2]
+    expected_minority_class_size = n_cat[1] * ratio
+    n = round(Int, expected_minority_class_size - actual_minority_class_size)
+    if n < 1
+        error("SMOTE can only add elements; not remove them. Try changing the ratio.")
+    end
+    minority = let
+        bitvec = categories .== unique_cat[2]
+        minority_data = mat[bitvec, :]
+        header = Tables.columnnames(data)
+        Tables.table(minority_data; header)
+    end
+    new = smote(rng, minority, n; k)
+    new_table = Tables.columntable(new)
+    return _vcat_tables(data, new_table)
+end
+function smote(data, col::Union{AbstractString,Symbol}; ratio::Real=1.0, k::Union{Nothing,Int}=nothing)
+    return smote(default_rng(), data, col; ratio, k)
+end
