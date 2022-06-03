@@ -1,5 +1,7 @@
 module Resample
 
+import MLJModelInterface
+
 using Distances: euclidean
 using Random:
     AbstractRNG,
@@ -7,9 +9,12 @@ using Random:
 using NearestNeighbors
 using Tables
 
-export smote
 
 include("smote.jl")
+export smote
+
+include("mlj.jl")
+export Smote
 
 # Trigger precomilation on some functions by running a minimal workload.
 if ccall(:jl_generating_output, Cint, ()) == 1

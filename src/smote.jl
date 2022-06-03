@@ -189,6 +189,11 @@ function smote(
     end
     return smote(rng, minority, n; k)
 end
-function smote(data, col::Union{AbstractString,Symbol}; ratio::Real=1.0, k::Union{Nothing,Int}=nothing)
+function smote(
+        data,
+        col::Union{AbstractString,Symbol};
+        ratio::Real=1.0,
+        k::Union{Nothing,Int}=nothing
+    )
     return smote(default_rng(), data, col; ratio, k)
 end
